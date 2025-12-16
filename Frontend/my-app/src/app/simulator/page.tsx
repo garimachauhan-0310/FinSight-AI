@@ -1,30 +1,38 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { getPortfolioRecommendation } from "@/lib/recommendations";
 
 const COLORS = ["#4F46E5", "#8B5CF6", "#60A5FA"];
 
 export default function SimulatorPage() {
   const [risk, setRisk] = useState(5);
   const [years, setYears] = useState(10);
+  const router = useRouter();
 
   // Allocation logic (simple MVP logic)
-  const stocks = Math.min(70, Math.max(30, risk * 6 + years));
-  const bonds = Math.max(15, 100 - stocks - 10);
-  const cash = 100 - stocks - bonds;
+  const recommendation = getPortfolioRecommendation({
+    age: 21, // later this comes from onboarding
+    riskScore: risk, // slider value
+    timeHorizon: years, // slider value
+  });
+
+  const stocks = recommendation.equity;
+  const bonds = recommendation.debt;
+  const cash = recommendation.cash;
+
+  const expectedReturn = recommendation.expectedReturn;
+  const volatility = recommendation.volatility;
+  const riskLabel = recommendation.riskLevel;
 
   const data = [
     { name: "Stocks", value: stocks },
     { name: "Bonds", value: bonds },
     { name: "Cash", value: cash },
   ];
-
-  const expectedReturn = (stocks * 0.11 + bonds * 0.06 + cash * 0.03) / 100;
-
-  const volatility = 5 + risk * 0.9;
-
-  const riskLabel = risk <= 3 ? "Low" : risk <= 6 ? "Moderate" : "High";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#EEF2FF] via-[#F5F3FF] to-[#F8FAFC] px-6 py-12">
@@ -153,6 +161,15 @@ export default function SimulatorPage() {
             </p>
           </div>
         </div>
+      </div>
+      {/* CTA */}
+      <div className="text-center mt-12">
+        <button
+          onClick={() => router.push("/trust-ethics")}
+          className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-10 py-3 rounded-xl font-medium transition shadow-md"
+        >
+          View Trust & Ethics →
+        </button>
       </div>
     </div>
   );

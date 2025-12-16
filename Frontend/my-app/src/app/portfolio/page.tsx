@@ -1,4 +1,9 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export default function PortfolioPage() {
+  const router = useRouter();
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#F5F7FF] to-white px-6 py-12">
       <div className="max-w-6xl mx-auto">
@@ -142,7 +147,10 @@ export default function PortfolioPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-8 py-3 rounded-xl font-medium transition shadow-md">
+          <button
+            onClick={() => router.push("/explaination")}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-8 py-3 rounded-xl font-medium transition shadow-md"
+          >
             Explain This Recommendation →
           </button>
         </div>
