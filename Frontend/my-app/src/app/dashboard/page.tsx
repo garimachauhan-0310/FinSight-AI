@@ -1,4 +1,9 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export default function DashboardPage() {
+  const router = useRouter();
+
   return (
     <section className="min-h-screen bg-gradient-to-b from-[#F5F7FF] to-white px-6 py-10">
       <div className="max-w-5xl mx-auto">
@@ -73,7 +78,10 @@ export default function DashboardPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium transition shadow-md">
+          <button
+            onClick={() => router.push("/portfolio")}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-medium transition shadow-md"
+          >
             View Recommended Portfolio
           </button>
         </div>
