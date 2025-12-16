@@ -1,4 +1,14 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 export default function GoalsSetupPage() {
+  const router = useRouter();
+
+  const [timeHorizon, setTimeHorizon] = useState<string | null>(null);
+  const [monthlyInvestment, setMonthlyInvestment] = useState(500);
+
+  const isFormValid = timeHorizon !== null;
   return (
     <section className="min-h-screen bg-gradient-to-br from-[#EEF2FF] via-[#F5F7FF] to-white flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-xl">
@@ -39,20 +49,26 @@ export default function GoalsSetupPage() {
             </p>
 
             <div className="grid grid-cols-3 gap-3">
-              <div className="border rounded-xl p-4 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
-                <p className="text-sm font-medium text-gray-800">&lt; 1 year</p>
-                <p className="text-xs text-gray-500">Short-term</p>
-              </div>
-
-              <div className="border rounded-xl p-4 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
-                <p className="text-sm font-medium text-gray-800">1–3 years</p>
-                <p className="text-xs text-gray-500">Medium-term</p>
-              </div>
-
-              <div className="border rounded-xl p-4 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition">
-                <p className="text-sm font-medium text-gray-800">3–5 years</p>
-                <p className="text-xs text-gray-500">Long-term</p>
-              </div>
+              {["< 1 year", "1–3 years", "3–5 years"].map((option) => (
+                <div
+                  key={option}
+                  onClick={() => setTimeHorizon(option)}
+                  className={`border rounded-xl p-4 text-center cursor-pointer transition ${
+                    timeHorizon === option
+                      ? "border-indigo-600 bg-indigo-50"
+                      : "hover:border-indigo-500 hover:bg-indigo-50"
+                  }`}
+                >
+                  <p className="text-sm font-medium text-gray-800">{option}</p>
+                  <p className="text-xs text-gray-500">
+                    {option === "< 1 year"
+                      ? "Short-term"
+                      : option === "1–3 years"
+                      ? "Medium-term"
+                      : "Long-term"}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -63,7 +79,8 @@ export default function GoalsSetupPage() {
             </p>
 
             <p className="text-2xl font-semibold text-indigo-600 mb-2">
-              $500 <span className="text-sm text-gray-500">/ month</span>
+              ${monthlyInvestment}{" "}
+              <span className="text-sm text-gray-500">/ month</span>
             </p>
 
             <input
@@ -71,7 +88,8 @@ export default function GoalsSetupPage() {
               min={100}
               max={5000}
               step={100}
-              defaultValue={500}
+              value={monthlyInvestment}
+              onChange={(e) => setMonthlyInvestment(Number(e.target.value))}
               className="w-full accent-indigo-600"
             />
 
@@ -82,7 +100,15 @@ export default function GoalsSetupPage() {
           </div>
 
           {/* Continue Button */}
-          <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-semibold transition">
+          <button
+            disabled={!isFormValid}
+            onClick={() => router.push("/dashboard")}
+            className={`w-full py-4 rounded-xl font-semibold transition ${
+              isFormValid
+                ? "bg-indigo-600 hover:bg-indigo-700 text-white"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
             Continue
           </button>
         </div>
