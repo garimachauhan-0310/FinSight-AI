@@ -1,0 +1,2 @@
+def explain(profile, allocation):
+    return f"We recommended {allocation['equity']}% equity because you are {profile['age']} years old , investing for {profile['time_horizon']} years and have a {profile['risk']} risk appetite"
