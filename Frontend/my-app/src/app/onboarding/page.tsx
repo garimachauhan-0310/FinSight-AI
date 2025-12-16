@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function OnboardingProfile() {
+  const [age, setAge] = useState<number | "">("");
   const [income, setIncome] = useState(50000);
   const [experience, setExperience] = useState("Beginner");
   const [risk, setRisk] = useState("Medium");
   const [goal, setGoal] = useState("Wealth Growth");
+  const router = useRouter();
+  const isFormValid = age !== "" && age >= 18;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100 px-6 py-16">
@@ -59,6 +63,8 @@ export default function OnboardingProfile() {
           <input
             type="number"
             min={18}
+            value={age}
+            onChange={(e) => setAge(Number(e.target.value))}
             placeholder="Enter your age"
             className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none"
           />
@@ -173,8 +179,13 @@ export default function OnboardingProfile() {
 
         {/* Continue */}
         <button
-          disabled
-          className="mt-10 w-full rounded-xl bg-gray-300 py-3 text-gray-500 font-semibold cursor-not-allowed"
+          disabled={!isFormValid}
+          onClick={() => router.push("/onboarding/goals")}
+          className={`mt-10 w-full rounded-xl py-3 font-semibold transition ${
+            isFormValid
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-gray-300 text-gray-500 cursor-not-allowed"
+          }`}
         >
           Continue →
         </button>
