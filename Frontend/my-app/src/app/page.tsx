@@ -1,4 +1,8 @@
+"use client";
+
+import { useRouter } from "next/navigation";
 export default function Home() {
+  const router = useRouter();
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-purple-100">
       {/* HERO SECTION */}
@@ -28,7 +32,10 @@ export default function Home() {
         </p>
 
         {/* CTA */}
-        <button className="mt-10 rounded-xl bg-blue-600 px-7 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700 hover:shadow-xl">
+        <button
+          onClick={() => router.push("/onboarding")}
+          className="mt-10 rounded-xl bg-blue-600 px-7 py-3 font-semibold text-white shadow-lg transition hover:bg-blue-700 hover:shadow-xl"
+        >
           Start Investing Smarter
         </button>
       </section>
