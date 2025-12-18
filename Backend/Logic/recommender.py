@@ -1,14 +1,12 @@
-# backend/logic/recommendation.py
+from market_data import get_equity_metrics
 
 def get_portfolio_recommendation(age: int, risk_score: int, time_horizon: int):
-    """
-    Rule-based, explainable portfolio recommendation logic.
-    """
 
-    # Equity allocation logic
+    if not (1 <= risk_score <= 10):
+        raise ValueError("Risk score must be between 1 and 10")
+
     equity = min(70, max(30, risk_score * 6 + time_horizon))
 
-    # Adjust for short time horizon
     if time_horizon < 3:
         equity -= 10
 
@@ -17,9 +15,16 @@ def get_portfolio_recommendation(age: int, risk_score: int, time_horizon: int):
     debt = max(15, 100 - equity - 10)
     cash = 100 - equity - debt
 
-    # Risk metrics (simple assumptions)
-    expected_return = (equity * 0.11 + debt * 0.06 + cash * 0.03) / 100
-    volatility = 5 + risk_score * 0.9
+    # 🔥 Real market data
+    equity_return, equity_vol = get_equity_metrics()
+
+    expected_return = (
+        equity * equity_return +
+        debt * 0.06 +
+        cash * 0.03
+    ) / 100
+
+    volatility = equity_vol * (equity / 100)
 
     risk_level = (
         "Low" if risk_score <= 3
@@ -31,7 +36,7 @@ def get_portfolio_recommendation(age: int, risk_score: int, time_horizon: int):
         "equity": equity,
         "debt": debt,
         "cash": cash,
-        "expected_return": expected_return,
-        "volatility": volatility,
+        "expected_return": round(expected_return, 4),
+        "volatility": round(volatility, 4),
         "risk_level": risk_level,
     }
