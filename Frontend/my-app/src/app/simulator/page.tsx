@@ -25,12 +25,11 @@ export default function SimulatorPage() {
   const [recommendation, setRecommendation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const [userProfile, setUserProfile] = useState<any>(null);
 
-  /* ----------------------------------
-     Load onboarding data
-  -----------------------------------*/
+  /* -----------------------------
+     Load onboarding profile
+  ------------------------------*/
   useEffect(() => {
     const stored = localStorage.getItem("finsight_user_profile");
     if (stored) {
@@ -46,9 +45,9 @@ export default function SimulatorPage() {
     );
   }
 
-  /* ----------------------------------
+  /* -----------------------------
      Helpers
-  -----------------------------------*/
+  ------------------------------*/
   const mapRiskToScore = (risk: string) => {
     if (risk === "Low") return 3;
     if (risk === "Medium") return 6;
@@ -61,9 +60,9 @@ export default function SimulatorPage() {
     return years;
   };
 
-  /* ----------------------------------
+  /* -----------------------------
      Simulate
-  -----------------------------------*/
+  ------------------------------*/
   async function handleSimulate() {
     try {
       setLoading(true);
@@ -71,8 +70,8 @@ export default function SimulatorPage() {
 
       const result = await fetchRecommendation({
         age: userProfile.age,
-        risk_score: mapRiskToScore(userProfile.risk),
-        time_horizon: mapGoalToHorizon(userProfile.goal),
+        riskScore: mapRiskToScore(userProfile.risk),
+        timeHorizon: mapGoalToHorizon(userProfile.goal),
       });
 
       setRecommendation(result);
@@ -293,13 +292,27 @@ export default function SimulatorPage() {
         </div>
       )}
 
+      {/* FINAL CTA */}
       {recommendation && (
-        <div className="text-center mt-12">
+        <div className="text-center mt-12 flex justify-center gap-4">
           <button
             onClick={() => router.push("/trust-ethics")}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-10 py-3 rounded-xl font-semibold transition shadow-md"
+            className="border border-indigo-600 text-indigo-600 px-8 py-3 rounded-xl font-semibold hover:bg-indigo-50"
           >
-            View Trust & Ethics →
+            Trust & Ethics
+          </button>
+
+          <button
+            onClick={() => {
+              localStorage.setItem(
+                "finsight_final_recommendation",
+                JSON.stringify(recommendation)
+              );
+              router.push("/portfolio");
+            }}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:opacity-90 text-white px-8 py-3 rounded-xl font-semibold transition shadow-md"
+          >
+            Lock This Portfolio →
           </button>
         </div>
       )}
