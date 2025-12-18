@@ -1,5 +1,6 @@
 from database import engine
 from models import Base
+from simulations import monte_carlo_simulation
 
 Base.metadata.create_all(bind=engine)
 
@@ -34,6 +35,14 @@ def recommend(data: RecommendationRequest):
         data.risk_score,
         data.time_horizon
     )
+
+    simulation = monte_carlo_simulation(
+    initial_investment=100000,  # ₹1L default
+    expected_return=result["expected_return"],
+    volatility=result["volatility"],
+    years=data.time_horizon
+    )
+
 
     explanation = explain(
         data.age,
@@ -71,6 +80,7 @@ def recommend(data: RecommendationRequest):
         "volatility": result["volatility"],
         "risk_level": result["risk_level"],
         "explanation": explanation,
+        "simulation": simulation
     }
 @app.get("/history")
 def get_history():

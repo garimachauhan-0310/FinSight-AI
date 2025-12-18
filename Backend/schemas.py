@@ -11,6 +11,11 @@ class PortfolioAllocation(BaseModel):
     debt: int
     cash: int
 
+class SimulationResult(BaseModel):
+    median: float
+    best_case: float
+    worst_case: float
+    probability_of_loss: float
 
 class RecommendationResponse(BaseModel):
     allocation: PortfolioAllocation
@@ -18,3 +23,4 @@ class RecommendationResponse(BaseModel):
     volatility: float
     risk_level: str
     explanation: str
+    simulation: SimulationResult
