@@ -10,6 +10,7 @@ export default function OnboardingProfile() {
   const [risk, setRisk] = useState("Medium");
   const [goal, setGoal] = useState("Wealth Growth");
   const router = useRouter();
+
   const isFormValid = age !== "" && age >= 18;
 
   return (
@@ -17,32 +18,6 @@ export default function OnboardingProfile() {
       {/* Header */}
       <div className="text-center mb-10">
         <h1 className="text-2xl font-semibold text-blue-600">FinSight AI</h1>
-
-        {/* Step Indicator */}
-        <div className="mt-6 flex justify-center items-center gap-6 text-sm text-gray-500">
-          <div className="flex items-center gap-2 font-medium text-blue-600">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white text-xs">
-              1
-            </span>
-            Profile
-          </div>
-          <span>—</span>
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-white text-xs">
-              2
-            </span>
-            Goals
-          </div>
-          <span>—</span>
-          <div className="flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-300 text-white text-xs">
-              3
-            </span>
-            Confirm
-          </div>
-        </div>
-
-        <p className="mt-2 text-sm text-gray-500">Step 1 of 3</p>
       </div>
 
       {/* Card */}
@@ -70,7 +45,7 @@ export default function OnboardingProfile() {
           />
         </div>
 
-        {/* Income Slider */}
+        {/* Income */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700">
             Monthly income
@@ -89,12 +64,11 @@ export default function OnboardingProfile() {
           </p>
         </div>
 
-        {/* Investment Experience */}
+        {/* Experience */}
         <div className="mt-8">
           <p className="text-sm font-medium text-gray-700">
             Investment experience
           </p>
-
           <div className="mt-3 grid grid-cols-3 gap-3">
             {["Beginner", "Intermediate", "Advanced"].map((level) => (
               <button
@@ -119,10 +93,9 @@ export default function OnboardingProfile() {
           </div>
         </div>
 
-        {/* Risk Appetite */}
+        {/* Risk */}
         <div className="mt-8">
           <p className="text-sm font-medium text-gray-700">Risk appetite</p>
-
           <div className="mt-3 grid grid-cols-3 gap-3">
             {["Low", "Medium", "High"].map((level) => (
               <button
@@ -147,12 +120,11 @@ export default function OnboardingProfile() {
           </div>
         </div>
 
-        {/* Primary Goal */}
+        {/* Goal */}
         <div className="mt-8">
           <p className="text-sm font-medium text-gray-700">
             Primary investment goal
           </p>
-
           <div className="mt-3 grid grid-cols-3 gap-3">
             {["Wealth Growth", "Emergency Fund", "Short-term Goal"].map((g) => (
               <button
@@ -180,7 +152,21 @@ export default function OnboardingProfile() {
         {/* Continue */}
         <button
           disabled={!isFormValid}
-          onClick={() => router.push("/onboarding/goals")}
+          onClick={() => {
+            const profile = {
+              age,
+              income,
+              experience,
+              risk,
+              goal,
+            };
+
+            localStorage.setItem(
+              "finsight_user_profile",
+              JSON.stringify(profile)
+            );
+            router.push("/simulator");
+          }}
           className={`mt-10 w-full rounded-xl py-3 font-semibold transition ${
             isFormValid
               ? "bg-blue-600 text-white hover:bg-blue-700"
@@ -189,6 +175,17 @@ export default function OnboardingProfile() {
         >
           Continue →
         </button>
+
+        {/* Trust & Ethics */}
+        <div className="mt-6 text-center text-sm text-gray-600">
+          <p>Curious how FinSight AI makes recommendations?</p>
+          <button
+            onClick={() => router.push("/trust-ethics")}
+            className="mt-1 font-medium text-blue-600 hover:underline"
+          >
+            Read our Trust & Ethics principles
+          </button>
+        </div>
       </div>
     </main>
   );

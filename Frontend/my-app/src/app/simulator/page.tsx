@@ -1,29 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+} from "recharts";
 import { fetchRecommendation } from "@/lib/api";
 
 const COLORS = ["#4F46E5", "#8B5CF6", "#60A5FA"];
 
 export default function SimulatorPage() {
+  const router = useRouter();
+
   const [risk, setRisk] = useState(5);
   const [years, setYears] = useState(10);
   const [recommendation, setRecommendation] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  /* ----------------------------------
+     Load onboarding data
+  -----------------------------------*/
+  useEffect(() => {
+    const stored = localStorage.getItem("finsight_user_profile");
+    if (stored) {
+      setUserProfile(JSON.parse(stored));
+    }
+  }, []);
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-700">
+        Loading your profile…
+      </div>
+    );
+  }
+
+  /* ----------------------------------
+     Helpers
+  -----------------------------------*/
+  const mapRiskToScore = (risk: string) => {
+    if (risk === "Low") return 3;
+    if (risk === "Medium") return 6;
+    return 8;
+  };
+
+  const mapGoalToHorizon = (goal: string) => {
+    if (goal === "Short-term Goal") return 2;
+    if (goal === "Emergency Fund") return 3;
+    return years;
+  };
+
+  /* ----------------------------------
+     Simulate
+  -----------------------------------*/
   async function handleSimulate() {
     try {
       setLoading(true);
       setError("");
 
       const result = await fetchRecommendation({
-        age: 21, // later from onboarding
-        riskScore: risk,
-        timeHorizon: years,
+        age: userProfile.age,
+        risk_score: mapRiskToScore(userProfile.risk),
+        time_horizon: mapGoalToHorizon(userProfile.goal),
       });
 
       setRecommendation(result);
@@ -34,26 +83,38 @@ export default function SimulatorPage() {
     }
   }
 
+  const allocationData = recommendation && [
+    { name: "Stocks", value: recommendation.allocation.equity },
+    { name: "Bonds", value: recommendation.allocation.debt },
+    { name: "Cash", value: recommendation.allocation.cash },
+  ];
+
+  const monteCarloData = recommendation && [
+    { scenario: "Worst Case", value: recommendation.simulation.worst_case },
+    { scenario: "Median", value: recommendation.simulation.median },
+    { scenario: "Best Case", value: recommendation.simulation.best_case },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#EEF2FF] via-[#F5F3FF] to-[#F8FAFC] px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-slate-900">FinSight AI</h1>
         <p className="mt-2 text-slate-700 font-medium">
-          Scenario Simulator — What if?
+          Personalized Scenario Simulator
         </p>
       </div>
 
       {/* Controls */}
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 mb-10">
         <h2 className="text-xl font-semibold text-slate-900 mb-6">
-          Simulation Controls
+          Adjust Your Scenario
         </h2>
 
         {/* Risk */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-800 mb-1">
-            Risk Appetite
+            Risk Sensitivity
           </label>
           <p className="text-2xl font-semibold text-indigo-700 mb-2">
             {risk} / 10
@@ -66,16 +127,12 @@ export default function SimulatorPage() {
             onChange={(e) => setRisk(Number(e.target.value))}
             className="w-full accent-indigo-600"
           />
-          <div className="flex justify-between text-xs text-slate-600 mt-1">
-            <span>Conservative</span>
-            <span>Aggressive</span>
-          </div>
         </div>
 
         {/* Time */}
         <div className="mb-8">
           <label className="block text-sm font-medium text-slate-800 mb-1">
-            Time Horizon
+            Investment Horizon
           </label>
           <p className="text-2xl font-semibold text-indigo-700 mb-2">
             {years} years
@@ -88,10 +145,6 @@ export default function SimulatorPage() {
             onChange={(e) => setYears(Number(e.target.value))}
             className="w-full accent-purple-600"
           />
-          <div className="flex justify-between text-xs text-slate-600 mt-1">
-            <span>1 year</span>
-            <span>30 years</span>
-          </div>
         </div>
 
         <button
@@ -112,7 +165,7 @@ export default function SimulatorPage() {
       {/* Results */}
       {recommendation && (
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Chart + Allocation */}
+          {/* Allocation */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
               Portfolio Allocation
@@ -122,11 +175,7 @@ export default function SimulatorPage() {
               <ResponsiveContainer>
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: "Stocks", value: recommendation.equity },
-                      { name: "Bonds", value: recommendation.debt },
-                      { name: "Cash", value: recommendation.cash },
-                    ]}
+                    data={allocationData}
                     dataKey="value"
                     innerRadius={70}
                     outerRadius={100}
@@ -135,73 +184,115 @@ export default function SimulatorPage() {
                       <Cell key={i} fill={color} />
                     ))}
                   </Pie>
-                  <Tooltip />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      color: "#ffffff",
+                      borderRadius: "8px",
+                      border: "none",
+                    }}
+                    itemStyle={{ color: "#ffffff" }}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
-            {/* Allocation Numbers */}
             <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="bg-slate-100 rounded-xl p-4 text-center">
-                <p className="text-sm font-medium text-slate-700">Stocks</p>
-                <p className="text-2xl font-bold text-indigo-700">
-                  {recommendation.equity}%
-                </p>
-              </div>
-
-              <div className="bg-slate-100 rounded-xl p-4 text-center">
-                <p className="text-sm font-medium text-slate-700">Bonds</p>
-                <p className="text-2xl font-bold text-indigo-700">
-                  {recommendation.debt}%
-                </p>
-              </div>
-
-              <div className="bg-slate-100 rounded-xl p-4 text-center">
-                <p className="text-sm font-medium text-slate-700">Cash</p>
-                <p className="text-2xl font-bold text-indigo-700">
-                  {recommendation.cash}%
-                </p>
-              </div>
+              {allocationData.map((item) => (
+                <div
+                  key={item.name}
+                  className="bg-slate-100 rounded-xl p-4 text-center"
+                >
+                  <p className="text-sm font-medium text-slate-800">
+                    {item.name}
+                  </p>
+                  <p className="text-2xl font-bold text-indigo-700">
+                    {item.value}%
+                  </p>
+                </div>
+              ))}
             </div>
 
-            {/* Expected Return */}
-            <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
-              <p className="text-sm text-slate-700">Expected Annual Return</p>
-              <p className="text-3xl font-bold text-indigo-700">
-                {(recommendation.expected_return * 100).toFixed(1)}%
-              </p>
+            <div className="grid grid-cols-2 gap-4 mt-6">
+              <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
+                <p className="text-sm font-medium text-slate-800">
+                  Expected Annual Return
+                </p>
+                <p className="text-3xl font-bold text-indigo-700">
+                  {(recommendation.expected_return * 100).toFixed(1)}%
+                </p>
+              </div>
+
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-center">
+                <p className="text-sm font-medium text-slate-800">Volatility</p>
+                <p className="text-3xl font-bold text-rose-600">
+                  {recommendation.volatility.toFixed(1)}%
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Risk Metrics */}
+          {/* Monte Carlo */}
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
-              Risk Metrics
+              Monte Carlo Outcomes (₹1,00,000 Invested)
             </h3>
 
-            <p className="text-slate-800 mb-2">
-              Risk Level:{" "}
-              <span className="font-semibold text-indigo-700">
-                {recommendation.risk_level}
-              </span>
-            </p>
+            <div className="h-64">
+              <ResponsiveContainer>
+                <BarChart data={monteCarloData}>
+                  <XAxis dataKey="scenario" stroke="#1f2937" />
+                  <YAxis stroke="#1f2937" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      color: "#ffffff",
+                      borderRadius: "8px",
+                      border: "none",
+                    }}
+                    formatter={(v: number) => `₹${v.toLocaleString()}`}
+                  />
+                  <Bar dataKey="value" fill="#6366F1" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
 
-            <p className="text-slate-800 mb-2">
-              Volatility:{" "}
-              <span className="font-semibold text-indigo-700">
-                {recommendation.volatility.toFixed(1)}%
-              </span>
-            </p>
+            <div className="grid grid-cols-3 gap-4 mt-6">
+              <div className="bg-slate-100 rounded-xl p-4 text-center">
+                <p className="text-sm font-medium text-slate-800">Worst Case</p>
+                <p className="text-lg font-bold text-slate-900">
+                  ₹{recommendation.simulation.worst_case.toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-slate-100 rounded-xl p-4 text-center">
+                <p className="text-sm font-medium text-slate-800">Median</p>
+                <p className="text-lg font-bold text-slate-900">
+                  ₹{recommendation.simulation.median.toLocaleString()}
+                </p>
+              </div>
+              <div className="bg-slate-100 rounded-xl p-4 text-center">
+                <p className="text-sm font-medium text-slate-800">Best Case</p>
+                <p className="text-lg font-bold text-slate-900">
+                  ₹{recommendation.simulation.best_case.toLocaleString()}
+                </p>
+              </div>
+            </div>
 
-            <p className="text-sm text-slate-600 mt-4">
-              This portfolio balances growth and stability based on your
-              selected risk appetite and investment horizon.
-            </p>
+            <div className="mt-6 bg-indigo-50 border border-indigo-200 rounded-xl p-4 text-center">
+              <p className="text-sm font-medium text-slate-800">
+                Probability of Loss
+              </p>
+              <p className="text-3xl font-bold text-indigo-700">
+                {(recommendation.simulation.probability_of_loss * 100).toFixed(
+                  0
+                )}
+                %
+              </p>
+            </div>
           </div>
         </div>
       )}
 
-      {/* CTA */}
       {recommendation && (
         <div className="text-center mt-12">
           <button
