@@ -7,7 +7,6 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { getPortfolioRecommendation } from "@/lib/recommendations";
 
 const COLORS = ["#4F46E5", "#8B5CF6", "#60A5FA"];
-//yes
 
 export default function SimulatorPage() {
   const [risk, setRisk] = useState(5);
