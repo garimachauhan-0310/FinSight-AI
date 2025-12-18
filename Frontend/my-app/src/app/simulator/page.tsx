@@ -81,7 +81,7 @@ export default function SimulatorPage() {
       setLoading(false);
     }
   }
-
+  // hi
   const allocationData = recommendation && [
     { name: "Stocks", value: recommendation.allocation.equity },
     { name: "Bonds", value: recommendation.allocation.debt },
