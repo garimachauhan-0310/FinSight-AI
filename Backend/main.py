@@ -1,13 +1,26 @@
 from fastapi import FastAPI
-from Logic.recommender import recommend_portfolio
-from Logic.explainability import explain
-app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+from schemas import RecommendationRequest
+from Logic.recommender import get_portfolio_recommendation
+
+app = FastAPI(title="FinSight AI Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
 @app.post("/recommend")
-def recommend(profile: dict):
-    allocation = recommend_portfolio(profile)
-    explanation = explain(profile, allocation)
-    return {
-        "allocation": allocation,
-        "explanation": explanation,
-        "confidence_score": 92
-    }
+def recommend(data: RecommendationRequest):
+    return get_portfolio_recommendation(
+        data.age,
+        data.risk_score,
+        data.time_horizon
+    )
